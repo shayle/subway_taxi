@@ -10,7 +10,7 @@ import pandas as pd
 
 a = datetime.now()
 sc = pyspark.SparkContext()
-folder = "C:/Users/Nurvirta/OneDrive/CUSP/Spring/Big Data/subway-june/"
+folder = "/users/nm2773/bdm/subway/iter/subway-extracted"
 
 def next_whole_minute(t):
     return t+59 - (t+59)%60
@@ -106,13 +106,13 @@ def assign(v):
     return vals[1],vals[2],vals[3],assigned_val
 
 def create_new_key(k,v):
-    new_key = v[0]+'_'+v[1]+'_'+v[2]
+    new_key = v[0]+'_'+str(v[1])+'_'+str(v[2])
     new_val = v[3]
     return new_key, new_val
 
 # the rdd
 rdd = sc.binaryFiles(folder+'iter').mapPartitionsWithIndex(getStops)\
-        .reduceByKey(lambda x,y : x+y, numPartitions=32)\
+        .reduceByKey(lambda x,y : x+y, numPartitions=128)\
         .mapValues(lambda x: calculate_delta2(x))\
         .flatMapValues(lambda x:x)
 
@@ -125,7 +125,7 @@ threshold = rdd.map(lambda x: get_line_delta(x[0],x[1]))\
 result = thres.rightOuterJoin(rdd2)\
     .mapValues(lambda x: assign(x))\
     .map(lambda x: create_new_key(x[0],x[1]))\
-    .reduceByKey(add)
+    .reduceByKey(lambda x,y:x+y)
 
 df = pd.DataFrame.from_records(result.collect())
 df.to_csv('subway_delay_result.csv')
