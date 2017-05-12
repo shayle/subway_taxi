@@ -10,7 +10,7 @@ import pandas as pd
 
 a = datetime.now()
 sc = pyspark.SparkContext()
-folder = folder = "C:/Users/Nurvirta/OneDrive/CUSP/Spring/Big Data/subway-june/"
+folder = "C:/Users/Nurvirta/OneDrive/CUSP/Spring/Big Data/subway-june/"
 
 def next_whole_minute(t):
     return t+59 - (t+59)%60
